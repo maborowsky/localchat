@@ -95,7 +95,7 @@ void *receive(void *arg) {
     char                 out_buf[4096];   // Output buffer for data
     char                 in_buf[4096];    // Input buffer for data
     int                  retcode;         // Return code
-    char                 peer_ip[15];
+    char                 peer_ip[16];
 
     // >>> Step #1 <<<
     // Create a socket
@@ -143,8 +143,9 @@ void *receive(void *arg) {
 
         // Get the peer's IP
         // If getting weird IP errors, strcpy may not be working right
-        strcpy(peer_ip, inet_ntoa(client_ip_addr)); // The peer's ip addr
-        printf(peer_ip);
+        strncpy(peer_ip, inet_ntoa(client_ip_addr), sizeof(peer_ip));
+        peer_ip[sizeof(peer_ip) - 1] = '\0';
+        //printf(peer_ip);
 
         // Get the message type from packet
         token = strtok(in_buf, ":");

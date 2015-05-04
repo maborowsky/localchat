@@ -24,8 +24,8 @@ peer *header;
 void who() {
     peer *temp = header;
 
-    printf("-- PEERS ----------\n");
     fflush(stdout);
+    printf("-- PEERS ----------\n");
     while (temp != NULL) {
         printf(temp->username);
         printf("    ");
@@ -36,13 +36,14 @@ void who() {
     printf("--------------------\n\n");
 }
 
-void addPeer(char newUsername[32], char newIP[15]) {
+//TODO newUsername is null terminated. Change to be a length of 33 w/ the null byte at the end
+void addPeer(char newUsername[32], char newIP[16]) {
     // TODO check if user is already in table
     peer *temp;
 
     temp = (peer *) malloc( sizeof(peer) );
     strcpy(temp->username, newUsername);
-    strcpy(temp->username, newIP);
+    strcpy(temp->ip, newIP);
     temp->next = header;
     temp->prev = NULL;
 

@@ -11,7 +11,7 @@ extern char username[32]; // The client's username
 struct peer_node
 {
     char username[32];
-    char ip[15];
+    char ip[16];
     struct peer_node *next;
     struct peer_node *prev;
 };
@@ -35,7 +35,7 @@ void acceptChat();
 
 // peers.c
 void who();
-void addPeer(char newUsername[32], char newIP[15]);
+void addPeer(char newUsername[32], char newIP[16]);
 void removePeer(char user[32]);
 void removePeerNode(peer *del);
 
