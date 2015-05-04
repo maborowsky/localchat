@@ -172,7 +172,16 @@ void *receive(void *arg) {
         } else if ( !strcmp(msg_type, "BYE") ) {
             removePeer(token2);
             fflush(stdout);
-        }
+        } else if ( !strcmp(msg_type, "CHATREQ") ) {
+			acceptChat();
+		} else if ( !strcmp(msg_type, "CHATY") ) {
+			printf("Peer accepted chat");
+			chat();
+		} else if ( !strcmp(msg_type, "CHATN") ) {
+			printf("Peer is not accepting a chat");
+		} else if ( !strcmp(msg_type, "MSG") ) {
+			printf("MESSAGE: %s\n", token2);
+		}
 
         // >>> Step #4 <<<
         // Send to the client using the server socket

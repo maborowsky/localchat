@@ -33,9 +33,13 @@ void main(void)
             who();
         } else if ( !strcmp(input, "test\n") ) {
             broadcast("HELLO:username");
-        }
+        } else if ( !strcmp(input, "chat\n") ) {
+			requestChat();
+		}
+		
+		
     } // End loop
-
+	
     logout();
 }
 
@@ -76,4 +80,36 @@ void logout()
     //    abort();
     //}
     pthread_cancel(&listener);
+}
+
+void requestChat()
+{
+	char request[8] = "CHATREQ:";
+	broadcast(request);
+}
+
+void acceptChat()
+{
+	char yes[6] = "CHATY:";
+	char no[6] = "CHATN:";
+	printf("Do you want to accept the chat? Answer 'Yes' or 'No'\n");
+	char accept[32];
+	fgets(accept, 32, stdin);
+	if ( !strcmp(accept, "Yes\n") ) {
+		broadcast(yes);
+	}
+	else if ( !strcmp(accept, "No\n") ) {
+		broadcast(no);
+	}
+}
+
+void chat()
+{
+	char data[140];
+	printf("Send Chat Message: ");
+	fgets(data, 140, stdin);
+	strtok(data, "\n");
+	char message[50] = "MSG:";
+	strcat(message, data);
+	broadcast(message);
 }

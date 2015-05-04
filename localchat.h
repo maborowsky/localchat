@@ -25,6 +25,9 @@ void *receive(void *arg);
 // localchat.c
 void logon();
 void logout();
+void chat();
+void requestChat();
+void acceptChat();
 
 // peers.c
 void who();
