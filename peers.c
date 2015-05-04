@@ -28,18 +28,21 @@ void who() {
     fflush(stdout);
     while (temp != NULL) {
         printf(temp->username);
+        printf("    ");
+        printf(temp->ip);
         printf("\n");
         temp = temp->next;
     }
     printf("--------------------\n\n");
 }
 
-void addPeer(char newUsername[32]) {
-    // TODO check if user is in table
+void addPeer(char newUsername[32], char newIP[15]) {
+    // TODO check if user is already in table
     peer *temp;
 
     temp = (peer *) malloc( sizeof(peer) );
     strcpy(temp->username, newUsername);
+    strcpy(temp->username, newIP);
     temp->next = header;
     temp->prev = NULL;
 
