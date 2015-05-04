@@ -56,19 +56,28 @@ void addPeer(char newUsername[32], char newIP[16]) {
 
 void removePeer(char user[32]) {
     peer *temp = header;
-
-    while ( strcmp(temp->next->username, user) ) {
-        temp = temp->next;
-
-    }
-
-    if (temp == NULL) {
-        printf ("No user found with username %s", user);
-        return;
-    } else {
-        if (DEBUG) { printf("Peer to remove: %s", temp->username); }
-        removePeerNode(temp);
-    }
+    
+    printf("1st user: %s\n", temp->username);
+    if(strcmp(temp->username, user) == 0)
+    {
+		header = temp->next;
+		free(temp);
+	}
+	
+    while (temp->next != NULL)
+	{
+		printf("next user: %s\n", temp->next->username);
+		if (strcmp(user,temp->next->username) == 0)
+		{
+			printf("remove this one\n");
+			removePeerNode(temp->next);
+			return;
+		}
+		temp = temp->next;
+	}
+	
+		
+    
 }
 
 /*
@@ -79,23 +88,28 @@ void removePeer(char user[32]) {
  */
 void removePeerNode(peer *del)
 {
+    peer *temp = del;
+    temp->prev->next = NULL;
+    free(del);
+    
+    
     // Base case
-    if(header == NULL || del == NULL)
-        return;
+    //if(header == NULL || del == NULL)
+      //  return;
 
     // If the node to be deleted is the head node
-    if(header == del)
-        header = del->next;
+//    if(header == del)
+//        header = del->next;
 
     // Change next only if node to be deleted is NOT the last node
-    if(del->next != NULL)
-        del->next->prev = del->prev;
+//    if(del->next != NULL)
+//        del->next->prev = del->prev;
 
     // Change prev only if node to be deleted is NOT the first node
-    if(del->prev != NULL)
+//    if(del->prev != NULL)
         del->prev->next = del->next;     
 
     /* Finally, free the memory occupied by del*/
-    free(del);
-    return;
+//    free(del);
+//    return;
 }
