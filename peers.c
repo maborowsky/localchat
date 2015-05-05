@@ -57,8 +57,9 @@ void addPeer(char newUsername[32], char newIP[16]) {
 peer *getPeer(char user[32]) {
         printf("bb");fflush(stdout);
     peer *temp = header;
+<<<<<<< HEAD
 
-    while ( strcmp(temp->next->username, user) ) {
+    while ( strcmp(temp->username, user) ) {
         temp = temp->next;
     }
         printf("cc");fflush(stdout);
@@ -69,6 +70,27 @@ peer *getPeer(char user[32]) {
     } else {
         return temp;
     }
+//    
+//    printf("1st user: %s\n", temp->username);
+//    if(strcmp(temp->username, user) == 0)
+//    {
+//		header = temp->next;
+//		free(temp);
+//	}
+//	
+//    while (temp->next != NULL)
+//	{
+//		printf("next user: %s\n", temp->next->username);
+//		if (strcmp(user,temp->next->username) == 0)
+//		{
+//			printf("remove this one\n");
+//			removePeerNode(temp->next);
+//			return;
+//		}
+//		temp = temp->next;
+//	}
+//	
+//		
 }
 
 
