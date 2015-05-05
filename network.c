@@ -234,7 +234,10 @@ void *receive(void *arg) {
 					addPeer(token2); // token2 will be the username
 				}
 				else
-					//do nothing
+				{
+				
+				//do nothing
+				}
 			}
 			else if (strcmp(token3, "N") == 0)
 			{
