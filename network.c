@@ -353,6 +353,7 @@ void *receive(void *arg) {
             // TODO check if user is already in table. Should implement checkUser()
             addPeer(token2, peer_ip); // token2 will be the username
         } else if ( !strcmp(msg_type, "BYE") ) {
+            printf("removing peer %s\n", token2);
             removePeer(token2);
             fflush(stdout);
         }
