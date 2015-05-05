@@ -1,7 +1,9 @@
-#define PORT_NUM    	6021
-#define PORT_NUM_TCP    6022
-#define BCAST_IP    	"192.168.130.255"
-#define DEBUG       	1
+#include <netinet/in.h>
+
+#define PORT_NUM        6021 // UDP Port TODO: add _UDP to name
+#define PORT_NUM_TCP    6022 // TCP Port
+#define BCAST_IP        "192.168.130.255"
+#define DEBUG           1
 
 extern char username[32]; // The client's username
 
@@ -9,6 +11,7 @@ extern char username[32]; // The client's username
 struct peer_node
 {
     char username[32];
+    char ip[16];
     struct peer_node *next;
     struct peer_node *prev;
 };
@@ -35,8 +38,8 @@ void logout();
 
 // peers.c
 void who();
-void addPeer(char newUsername[32]);
 void getIP(char *ip[16], char user[32]);
+void addPeer(char newUsername[32], char newIP[16]);
 void removePeer(char user[32]);
 void removePeerNode(peer *del);
 

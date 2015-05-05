@@ -240,6 +240,7 @@ void *receive(void *arg) {
     char                 out_buf[4096];   // Output buffer for data
     char                 in_buf[4096];    // Input buffer for data
     int                  retcode;         // Return code
+    char                 peer_ip[16];
 
     // >>> Step #1 <<<
     // Create a socket
@@ -285,7 +286,11 @@ void *receive(void *arg) {
         // Copy the four-byte client IP address into an IP address structure
         memcpy(&client_ip_addr, &client_addr.sin_addr.s_addr, 4);
 
-        //peer_ip = inet_ntoa(client_ip_addr); // The peer's ip addr
+        // Get the peer's IP
+        // If getting weird IP errors, strcpy may not be working right
+        strncpy(peer_ip, inet_ntoa(client_ip_addr), sizeof(peer_ip));
+        peer_ip[sizeof(peer_ip) - 1] = '\0';
+        //printf(peer_ip);
 
         // Get the message type from packet
         token = strtok(in_buf, ":");
@@ -302,7 +307,7 @@ void *receive(void *arg) {
             // TODO check if user is already in table. Should implement checkUser()
             // Do not add self to table
             if ( strcmp(token2, username) ) {
-                addPeer(token2); // token2 will be the username
+                addPeer(token2, peer_ip); // token2 will be the username
 
                 // Send an ok packet back
                 char ok_msg[50] = "OK:";
@@ -313,7 +318,7 @@ void *receive(void *arg) {
             }
         } else if ( !strcmp(msg_type, "OK") ) {
             // TODO check if user is already in table. Should implement checkUser()
-            addPeer(token2); // token2 will be the username
+            addPeer(token2, peer_ip); // token2 will be the username
         } else if ( !strcmp(msg_type, "BYE") ) {
             removePeer(token2);
             fflush(stdout);
