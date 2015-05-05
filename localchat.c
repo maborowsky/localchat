@@ -18,6 +18,8 @@
 
 char username[32];
 pthread_t listener;
+pthread_t listener_tcp;
+
 
 void main(void)
 {
@@ -31,11 +33,9 @@ void main(void)
 
         if ( !strcmp(input, "who\n") ) {
             who();
-        } else if ( !strcmp(input, "test\n") ) {
-            broadcast("HELLO:username");
         } else if ( !strcmp(input, "chat\n") ) {
 			requestChat();
-		}
+        }
 		
 		
     } // End loop
@@ -53,8 +53,12 @@ void logon()
     fgets(username, 32, stdin);
     strtok(username, "\n"); // Gets rid of trailing "\n"
 
-    // Listening thread
-    if ( pthread_create(&listener, NULL, receive, NULL) ) {
+    // Listening threads
+    if ( pthread_create(&listener, NULL, receive, NULL) ) { // UDP
+        printf("error creating thread\n");
+        abort();
+    }
+    if ( pthread_create(&listener_tcp, NULL, receive_TCP, NULL) ) { // TCP
         printf("error creating thread\n");
         abort();
     }
@@ -74,42 +78,31 @@ void logout()
     strcat(bye, username);
     broadcast(bye);
 
+    // TODO: Close all ongoing conversations
+
     // Close listening thread
     //if ( pthread_join(&listener, NULL ) ) {
     //    printf("error joining thread.");
     //    abort();
     //}
     pthread_cancel(&listener);
+    pthread_cancel(&listener_tcp);
 }
 
 void requestChat()
 {
+	char user[32];
+	
+	//TODO: error check
+	printf("With whom would you like to chat? ");
+    fgets(user, 32, stdin);
+	strtok(user, "\n"); // Gets rid of trailing "\n"
 	char request[8] = "CHATREQ:";
-	broadcast(request);
-}
-
-void acceptChat()
-{
-	char yes[6] = "CHATY:";
-	char no[6] = "CHATN:";
-	printf("Do you want to accept the chat? Answer 'Yes' or 'No'\n");
-	char accept[32];
-	fgets(accept, 32, stdin);
-	if ( !strcmp(accept, "Yes\n") ) {
-		broadcast(yes);
-	}
-	else if ( !strcmp(accept, "No\n") ) {
-		broadcast(no);
-	}
-}
-
-void chat()
-{
-	char data[140];
-	printf("Send Chat Message: ");
-	fgets(data, 140, stdin);
-	strtok(data, "\n");
-	char message[50] = "MSG:";
-	strcat(message, data);
-	broadcast(message);
+printf("aa ");fflush(stdout);
+printf(getPeer(user)->ip);
+fflush(stdout);
+	chat_setup(getPeer(user)->ip);
+        //send request
+        //use code to recieve right after send
+        //wait until conversation is over (or they rejected req)
 }
