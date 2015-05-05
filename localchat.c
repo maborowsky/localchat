@@ -89,14 +89,20 @@ void logout()
     pthread_cancel(&listener_tcp);
 }
 
-void requestChat(char user[32])
+void requestChat()
 {
+	char user[32];
+	
+	//TODO: error check
+	printf("With whom would you like to chat? ");
+    fgets(user, 32, stdin);
+	strtok(user, "\n"); // Gets rid of trailing "\n"
 	char request[8] = "CHATREQ:";
-
-        send_TCP(request, getIP(user));
-        if ( pthread_create(&listener, NULL, send_TCP, NULL) ) { // UDP
-            printf("error creating thread\n");
-            abort();
-        }
+printf("aa ");fflush(stdout);
+printf(getPeer(user)->ip);
+fflush(stdout);
+	chat_setup(getPeer(user)->ip);
+        //send request
+        //use code to recieve right after send
+        //wait until conversation is over (or they rejected req)
 }
-

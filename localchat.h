@@ -6,6 +6,7 @@
 #define DEBUG           1
 
 extern char username[32]; // The client's username
+extern int sock_desc; // Socket descriptor of the conversation. Set to -1 if no conversation
 
 // A node in the linked list of peers
 struct peer_node
@@ -25,10 +26,10 @@ extern peer *header; // The head of the linked list of peers
 void broadcast(char message[50]);
 void send_to_IP(char message[50], char ip_addr[15]);
 void *receive_TCP(void *arg);
-int chat_setup(char send_ip[15]);
-void chat_send(int sock_desc, char msg[140]);
-void chat_end(int sock_desc);
-void chat();
+void *receive(void *arg);
+void chat_setup(char send_ip[15]);
+void chat_send(char msg[140], char user[32]);
+void chat_end();
 void requestChat();
 int acceptChat();
 
@@ -38,7 +39,7 @@ void logout();
 
 // peers.c
 void who();
-void getIP(char *ip[16], char user[32]);
+peer *getPeer(char user[32]);
 void addPeer(char newUsername[32], char newIP[16]);
 void removePeer(char user[32]);
 void removePeerNode(peer *del);

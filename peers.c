@@ -54,17 +54,20 @@ void addPeer(char newUsername[32], char newIP[16]) {
     header = temp;
 }
 
-void getIP(char *ip[15], char user[32]) {
+peer *getPeer(char user[32]) {
+        printf("bb");fflush(stdout);
     peer *temp = header;
 
     while ( strcmp(temp->next->username, user) ) {
         temp = temp->next;
     }
+        printf("cc");fflush(stdout);
 
     if (temp == NULL) {
         printf ("No user found with username %s", user);
+        return NULL;
     } else {
-        strncpy(ip, temp->ip, sizeof(ip));
+        return temp;
     }
 }
 
