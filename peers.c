@@ -50,6 +50,21 @@ void addPeer(char newUsername[32]) {
     header = temp;
 }
 
+void getIP(char *ip[15], char user[32]) {
+    peer *temp = header;
+
+    while ( strcmp(temp->next->username, user) ) {
+        temp = temp->next;
+    }
+
+    if (temp == NULL) {
+        printf ("No user found with username %s", user);
+    } else {
+        strncpy(ip, temp->ip, sizeof(ip));
+    }
+}
+
+
 void removePeer(char user[32]) {
     peer *temp = header;
 
