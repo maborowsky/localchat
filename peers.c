@@ -55,69 +55,46 @@ void addPeer(char newUsername[32], char newIP[16]) {
 }
 
 peer *getPeer(char user[32]) {
-        printf("bb");fflush(stdout);
     peer *temp = header;
-<<<<<<< HEAD
 
-    while ( strcmp(temp->username, user) ) {
-        temp = temp->next;
-    }
-        printf("cc");fflush(stdout);
-
-    if (temp == NULL) {
-        printf ("No user found with username %s", user);
-        return NULL;
-    } else {
+    if(strcmp(temp->username, user) == 0)
+    {
         return temp;
     }
-//    
-//    printf("1st user: %s\n", temp->username);
-//    if(strcmp(temp->username, user) == 0)
-//    {
-//		header = temp->next;
-//		free(temp);
-//	}
-//	
-//    while (temp->next != NULL)
-//	{
-//		printf("next user: %s\n", temp->next->username);
-//		if (strcmp(user,temp->next->username) == 0)
-//		{
-//			printf("remove this one\n");
-//			removePeerNode(temp->next);
-//			return;
-//		}
-//		temp = temp->next;
-//	}
-//	
-//		
+
+    while (temp->next != NULL)
+    {
+        if (strcmp(user,temp->next->username) == 0)
+        {
+            printf("remove this one\n");
+            return temp;
+        }
+        temp = temp->next;
+    }
 }
 
 
 void removePeer(char user[32]) {
     peer *temp = header;
-    
+
     printf("1st user: %s\n", temp->username);
     if(strcmp(temp->username, user) == 0)
     {
-		header = temp->next;
-		free(temp);
-	}
-	
+        header = temp->next;
+        free(temp);
+    }
+
     while (temp->next != NULL)
-	{
-		printf("next user: %s\n", temp->next->username);
-		if (strcmp(user,temp->next->username) == 0)
-		{
-			printf("remove this one\n");
-			removePeerNode(temp->next);
-			return;
-		}
-		temp = temp->next;
-	}
-	
-		
-    
+    {
+        printf("next user: %s\n", temp->next->username);
+        if (strcmp(user,temp->next->username) == 0)
+        {
+            printf("remove this one\n");
+            removePeerNode(temp->next);
+            return;
+        }
+        temp = temp->next;
+    }
 }
 
 /*

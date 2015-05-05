@@ -79,7 +79,8 @@ void send_to_IP(char message[50], char ip_addr[15]) {
 } // End send_to_IP
 
 void chat_setup(char send_ip[15]) {
-	printf(send_ip);
+    if (sock_desc == -1) { printf("\nChat already set up\n"); return; }
+    else { printf("Chat set up with %s"); fflush(stdout); }
     int                  client_s;        // Client socket descriptor
     struct sockaddr_in   server_addr;     // Server Internet address
     char                 out_buf[4096];   // Output buffer for data
@@ -106,8 +107,8 @@ void chat_setup(char send_ip[15]) {
     server_addr.sin_port = htons(PORT_NUM_TCP);       // Port num to use
     server_addr.sin_addr.s_addr = inet_addr(send_ip); // IP address to use
 
-    retcode = connect(client_s, (struct sockaddr *)&server_addr, 
-            sizeof(server_addr));
+    retcode = connect(client_s, (struct sockaddr *)&server_addr, sizeof(server_addr));
+
     if (retcode < 0)
     {
         printf("*** ERROR - connect() failed \n");
@@ -127,20 +128,15 @@ void chat_setup(char send_ip[15]) {
 
 }
 
-void chat_send(char msg[140], char user[32]) {
+void chat_send(char msg[150]) {
     if (sock_desc == -1) { 
         printf("No current chat"); 
         return;
     }
 
     send(sock_desc, msg, strlen(msg), 0);
+    //printf("\nSent "); printf(msg); printf("\n");
 
-    //char data[140];
-    //printf("Send Chat Message: ");
-    //fgets(data, 140, stdin);
-    //strtok(data, "\n");
-    //char message[50] = "MSG:";
-    //strcat(message, data);
 }
 
 void chat_end() {
@@ -164,13 +160,13 @@ void *receive_TCP(void *arg) {
     struct sockaddr_in   client_addr;          // Client Internet address
     struct in_addr       client_ip_addr;       // Client IP address
     socklen_t            addr_len;             // Internet address length
-    char           in_buf[150];     // Input buffer
+    char                 in_buf[150];     // Input buffer
     int                  retcode;              // Return code
 
     // Create a socket, fill-in address information, and then bind it
     server_s = socket(AF_INET, SOCK_STREAM, 0);
     server_addr.sin_family = AF_INET;
-    server_addr.sin_port = htons(PORT_NUM);
+    server_addr.sin_port = htons(PORT_NUM_TCP);
     server_addr.sin_addr.s_addr = htonl(INADDR_ANY);
 
     // Bind the socket to an address
@@ -183,34 +179,30 @@ void *receive_TCP(void *arg) {
     // Set-up the listen
     listen(server_s, 100);
 
-    printf(">>> capServer is running on port %d <<< \n", PORT_NUM);
-
-    // Main loop to accept connections and then create
-    // a thread to handle the client.
+    //printf(">>> localchat is running on port %d <<< \n", PORT_NUM_TCP);
 
     addr_len = sizeof(client_addr);
     // Accept a connection from a client
     client_s = accept(server_s, (struct sockaddr *)&client_addr, &addr_len);
-    
     
     //Loop header
     char msg_type[12]; // The type of message that was recieved (token1)
     char token2[140]; // The token after msg_type
     char* token; // Used to tokenize strings
     while(1) {
-		// Receive a cap request from a client
-        memset(in_buf,0, 150);
+        // Receive a request from a client
+        memset(in_buf, 0, 150);
+        //printf("\nReady to receive...");fflush(stdout);
         retcode = recv(client_s, in_buf, 150, 0);
-        printf("Received from client: %s\n", in_buf);
+        //printf("\nReceived from client: %s", in_buf);
 
         // If the recv() return code is bad then bail-out
         if (retcode <= 0)
         {
+            printf("\nTCP receive failed\n");
             close(client_s);
             pthread_exit(NULL);
         }
-
-       
 
         // Get the message type from packet
         token = strtok(in_buf, ":");
@@ -222,22 +214,21 @@ void *receive_TCP(void *arg) {
         } else {
             // Packets without a second token
         }
-        printf(msg_type);
+
         if ( !strcmp(msg_type, "CHATREQ") ) {
             if (acceptChat() == 1) {
-                //------------------------------------------------------------------------------------------------------
-                printf("aaaaaaaaaaaaaaaaaaa");
-                //setup chat
-                //send(client_s, out_buf, strlen(out_buf), 0);
-                // end chat(not here, but eventually)
+                chat_setup(inet_ntoa(client_addr.sin_addr));
+            } else {
+                printf("\n Chat not accepted");
             }
         } else if ( !strcmp(msg_type, "CHATY") ) {
             printf("Peer accepted chat");
             //chat();
         } else if ( !strcmp(msg_type, "CHATN") ) {
             printf("Peer is not accepting a chat");
+            chat_end();
         } else if ( !strcmp(msg_type, "MSG") ) {
-            printf("MESSAGE: %s\n", token2);
+            printf("Received msg: %s\n", token2);
         }
     } // End loop
 
@@ -250,18 +241,6 @@ void *receive_TCP(void *arg) {
         printf("*** ERROR - close() failed \n");
         exit(-1);
     }
-}
-
-
-
-void print_ip(int ip)
-{
-    unsigned char bytes[4];
-    bytes[0] = ip & 0xFF;
-    bytes[1] = (ip >> 8) & 0xFF;
-    bytes[2] = (ip >> 16) & 0xFF;
-    bytes[3] = (ip >> 24) & 0xFF;   
-    printf("%d.%d.%d.%d\n", bytes[3], bytes[2], bytes[1], bytes[0]);        
 }
 
 void *receive(void *arg) {
@@ -376,16 +355,25 @@ int acceptChat()
 {
     char yes[6] = "CHATY:";
     char no[6] = "CHATN:";
-    printf("Do you want to accept the chat? Answer 'Yes' or 'No'\n");
-    char accept[32];
-    fgets(accept, 32, stdin);
-    if ( !strcmp(accept, "Yes\n") || !strcmp(accept, "yes\n") || !strcmp(accept, "y\n") || !strcmp(accept, "Y\n")  ) {
-        broadcast(yes);
-        return 1;
-    }
-    else {
-        broadcast(no);
-        return 0;
-    }
+    chat_send(yes);
+    return 1;
 }
+//    printf("\nDo you want to accept the chat? Answer 'Yes' or 'No'\n\r");
+    //char accept[32];
+    //fflush(stdin);
+    //fgets(accept, 32, stdin);
+//    if ( !strcmp(accept, "Yes") || !strcmp(accept, "yes")
+//        || !strcmp(accept, "y") || !strcmp(accept, "Y")  ) {
+//    if (ans == 1) {
+//        chat_send(yes);
+//        printf("sent yes");fflush(stdout);
+//        return 1;
+//    } else {
+//        chat_send(no);
+//        printf("sent no");fflush(stdout);
+//        return 0;
+//    }
+//    printf("acceptchat worked");fflush(stdout);
+//    return 1;
+//}
 

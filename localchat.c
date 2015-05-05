@@ -34,9 +34,10 @@ void main(void)
         if ( !strcmp(input, "who\n") ) {
             who();
         } else if ( !strcmp(input, "chat\n") ) {
-			requestChat();
+            requestChat();
+        } else if ( !strcmp(input, "msg\n") ) {
+            message();
         }
-		
 		
     } // End loop
 	
@@ -78,6 +79,7 @@ void logout()
     strcat(bye, username);
     broadcast(bye);
 
+    if (sock_desc != -1) { chat_end; }
     // TODO: Close all ongoing conversations
 
     // Close listening thread
@@ -91,18 +93,26 @@ void logout()
 
 void requestChat()
 {
-	char user[32];
-	
-	//TODO: error check
-	printf("With whom would you like to chat? ");
+    char user[32];
+
+    //TODO: error check
+    printf("With whom would you like to chat? ");
     fgets(user, 32, stdin);
-	strtok(user, "\n"); // Gets rid of trailing "\n"
-	char request[8] = "CHATREQ:";
-printf("aa ");fflush(stdout);
-printf(getPeer(user)->ip);
-fflush(stdout);
-	chat_setup(getPeer(user)->ip);
-        //send request
-        //use code to recieve right after send
-        //wait until conversation is over (or they rejected req)
+    strtok(user, "\n"); // Gets rid of trailing "\n"
+    char request[8] = "CHATREQ:";
+    chat_setup(getPeer(user)->ip);
+    chat_send(request);
+}
+
+void message() {
+    if (sock_desc == -1) { printf("\nNo conversation"); return; }
+
+    char message[150];
+    char msg[140];
+    strcpy(message, "MSG:");
+    printf("msg: ");fflush(stdout);
+    fgets(msg, 140, stdin);
+    strcat(message, msg);
+    chat_send(message);
+    printf("\nsent: "); printf(message);
 }

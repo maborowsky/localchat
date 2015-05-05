@@ -28,14 +28,15 @@ void send_to_IP(char message[50], char ip_addr[15]);
 void *receive_TCP(void *arg);
 void *receive(void *arg);
 void chat_setup(char send_ip[15]);
-void chat_send(char msg[140], char user[32]);
+void chat_send(char msg[150]);
 void chat_end();
-void requestChat();
 int acceptChat();
 
 // localchat.c
 void logon();
 void logout();
+void requestChat();
+void message();
 
 // peers.c
 void who();
