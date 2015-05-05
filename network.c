@@ -15,7 +15,15 @@
 #include <fcntl.h>        // Needed for sockets stuff
 #include <netdb.h>        // Needed for sockets stuff
 
+#include <sys/ioctl.h>	  // Needed for local ip
+#include <unistd.h>		  // Needed for local ip
+#include <net/if.h>		  // Needed for local ip
+
 #include "localchat.h"
+
+
+char* ipadd;
+char* peer_ip;
 
 void broadcast(char message[50]) {
     send_to_IP(message, BCAST_IP);
@@ -99,7 +107,9 @@ void *receive(void *arg) {
     // >>> Step #1 <<<
     // Create a socket
     //   - AF_INET is Address Family Internet and SOCK_DGRAM is datagram
-
+	
+	
+	
     server_s = socket(AF_INET, SOCK_DGRAM, 0);
     if (server_s < 0)
     {
@@ -121,10 +131,12 @@ void *receive(void *arg) {
     }
 
     char msg_type[12]; // The type of message that was recieved (token1)
-    char token2[32]; // The token after msg_type
+    char token2[140]; // The token after msg_type, changed to 140 bcause of MSG:DATA
+    char token3[32];	// third token in OK Y/N
+    char token4[32];	// fourth token in OK if 3rd is N
     char* token; // Used to tokenize strings
 
-    while (1) {
+	while (1) {
         // >>> Step #3 <<<
         // Wait to receive a message from peer
 
@@ -140,8 +152,10 @@ void *receive(void *arg) {
         // Copy the four-byte client IP address into an IP address structure
         memcpy(&client_ip_addr, &client_addr.sin_addr.s_addr, 4);
 
-        //peer_ip = inet_ntoa(client_ip_addr); // The peer's ip addr
+        
+		
 
+		
         // Get the message type from packet
         token = strtok(in_buf, ":");
         strcpy(msg_type, token);
@@ -153,22 +167,86 @@ void *receive(void *arg) {
             // Packets without a second token
         }
 
-        if ( !strcmp(msg_type, "HELLO") ) {
-            // TODO check if user is already in table. Should implement checkUser()
+		token = strtok(NULL, ":");
+        if (token != NULL) {
+            strcpy(token3, token);
+        } else {
+            // Packets without a third token
+        }
+        
+        token = strtok(NULL, ":");
+        if (token != NULL) {
+            strcpy(token4, token);
+        } else {
+            // Packets without a fourth token
+        }
+		
+		//ipadd = ipAddress();	//my ip address
+		//peer_ip = inet_ntoa(client_ip_addr); // The peer's ip addr
+		//printf("MY IP: %s, Client IP: %s\n", ipadd, peer_ip);
+		
+        if ( !strcmp(msg_type, "HELLO" ) ) {
+            // TODO check if user is already in table. Should implement checkUser() - implemented checkTable()
             // Do not add self to table
-            if ( strcmp(token2, username) ) {
-                addPeer(token2); // token2 will be the username
-
-                // Send an ok packet back
-                char ok_msg[50] = "OK:";
-                strcat(ok_msg, username);
-                strcat(ok_msg, ":Y");
-                //send_to_IP(client_addr.sin_addr.s_addr);
-                send_to_IP( ok_msg, inet_ntoa(client_addr.sin_addr) ); 
-            }
-        } else if ( !strcmp(msg_type, "OK") ) {
-            // TODO check if user is already in table. Should implement checkUser()
-            addPeer(token2); // token2 will be the username
+			char ok_msg[50] = "OK:";	
+			
+			int flag;
+			{
+				flag = checkTable(token2);
+			}
+			
+			if (strcmp(username, token2) == 0 && flag == 0)
+			{
+				addPeer(token2);
+				flag = -1;
+			}
+			// Send an ok packet back
+			strcat(ok_msg, username);
+			
+			if (flag == 0)
+			{
+				strcat(ok_msg, ":Y");
+				addPeer(token2); // token2 will be the username
+			}
+			else if (flag == -1)
+				strcat(ok_msg, ":Y");
+			else
+			{
+				strcat(ok_msg, ":N:");
+				strcat(ok_msg, username);
+				printf("Bad username\n");
+			}
+			
+			//send_to_IP(client_addr.sin_addr.s_addr);
+			send_to_IP( ok_msg, inet_ntoa(client_addr.sin_addr) );
+            
+        } else if ( (!strcmp(msg_type, "OK" ))) {
+			// TODO check if user is already in table. Should implement checkUser()
+			if (strcmp(token3,"Y") == 0)
+			{
+				int flag = 0;
+				{
+					flag = checkTable(token2);
+				}
+				
+				if (flag == 0)
+				{
+					addPeer(token2); // token2 will be the username
+				}
+				else
+					//do nothing
+			}
+			else if (strcmp(token3, "N") == 0)
+			{
+				removePeer(username);
+				printf("Enter new username:\n");
+				fgets(username, 32, stdin);
+				char hello[50] = "HELLO:";
+				strcat(hello, username);
+				broadcast(hello);
+				addPeer(username);
+			}         
+			 
         } else if ( !strcmp(msg_type, "BYE") ) {
             printf("removing peer %s\n", token2);
             removePeer(token2);
@@ -176,10 +254,10 @@ void *receive(void *arg) {
         } else if ( !strcmp(msg_type, "CHATREQ") ) {
 			acceptChat();
 		} else if ( !strcmp(msg_type, "CHATY") ) {
-			printf("Peer accepted chat");
+			printf("Peer accepted chat\n");
 			chat();
 		} else if ( !strcmp(msg_type, "CHATN") ) {
-			printf("Peer is not accepting a chat");
+			printf("Peer is not accepting a chat\n");
 		} else if ( !strcmp(msg_type, "MSG") ) {
 			printf("MESSAGE: %s\n", token2);
 		}
@@ -196,4 +274,29 @@ void *receive(void *arg) {
         printf("*** ERROR - close() failed \n");
         exit(-1);
     }
+}
+    
+char* ipAddress()
+{
+ int fd;
+ struct ifreq ifr;
+
+ fd = socket(AF_INET, SOCK_DGRAM, 0);
+
+ /* I want to get an IPv4 IP address */
+ ifr.ifr_addr.sa_family = AF_INET;
+
+ /* I want IP address attached to "eth0" */
+ strncpy(ifr.ifr_name, "eth0", IFNAMSIZ-1);
+
+ ioctl(fd, SIOCGIFADDR, &ifr);
+
+ close(fd);
+
+ /* display result */
+ printf("%s\n", inet_ntoa(((struct sockaddr_in *)&ifr.ifr_addr)->sin_addr));
+ 
+ ipadd = inet_ntoa(((struct sockaddr_in *)&ifr.ifr_addr)->sin_addr);
+
+ return inet_ntoa(((struct sockaddr_in *)&ifr.ifr_addr)->sin_addr);
 }

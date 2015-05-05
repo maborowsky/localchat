@@ -13,6 +13,10 @@
 #include <fcntl.h>        // Needed for sockets stuff
 #include <netdb.h>        // Needed for sockets stuff
 
+#include <net/if.h>		  // Needed for local ip
+#include <ifaddrs.h>	  // Needed for local ip
+#include <errno.h>		  // Needed for local ip
+
 #include "localchat.h"
 
 
@@ -53,7 +57,6 @@ void addPeer(char newUsername[32]) {
 void removePeer(char user[32]) {
     peer *temp = header;
     
-    printf("1st user: %s\n", temp->username);
     if(strcmp(temp->username, user) == 0)
     {
 		header = temp->next;
@@ -62,18 +65,14 @@ void removePeer(char user[32]) {
 	
     while (temp->next != NULL)
 	{
-		printf("next user: %s\n", temp->next->username);
 		if (strcmp(user,temp->next->username) == 0)
 		{
-			printf("remove this one\n");
 			removePeerNode(temp->next);
 			return;
 		}
 		temp = temp->next;
+		fflush(stdout);
 	}
-	
-		
-    
 }
 
 /*
@@ -85,27 +84,37 @@ void removePeer(char user[32]) {
 void removePeerNode(peer *del)
 {
     peer *temp = del;
-    temp->prev->next = NULL;
+    if (temp->next != NULL)
+    {
+		temp->prev->next = temp->next;
+	}
+	else
+		temp->prev->next = NULL;
+    
     free(del);
-    
-    
-    // Base case
-    //if(header == NULL || del == NULL)
-      //  return;
-
-    // If the node to be deleted is the head node
-//    if(header == del)
-//        header = del->next;
-
-    // Change next only if node to be deleted is NOT the last node
-//    if(del->next != NULL)
-//        del->next->prev = del->prev;
-
-    // Change prev only if node to be deleted is NOT the first node
-//    if(del->prev != NULL)
-        del->prev->next = del->next;     
-
-    /* Finally, free the memory occupied by del*/
-//    free(del);
-//    return;
 }
+
+int checkTable (char user[32])
+{
+	if (header == NULL)
+		return 0;
+	
+	peer *temp = header;
+
+	if(strcmp(temp->username, user) == 0)
+    {
+		return 1;
+	}
+	
+	while (temp->next != NULL)
+	{
+		if (strcmp(user,temp->next->username) == 0)
+		{
+			return 1;
+		}
+		temp = temp->next;
+		fflush(stdout);
+	}
+	return 0;
+}
+

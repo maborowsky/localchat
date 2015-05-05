@@ -13,6 +13,10 @@
 #include <fcntl.h>        // Needed for sockets stuff
 #include <netdb.h>        // Needed for sockets stuff
 
+#include <net/if.h>		  // Needed for local ip
+#include <ifaddrs.h>	  // Needed for local ip
+#include <errno.h>		  // Needed for local ip
+
 #include "localchat.h"
 
 
@@ -21,10 +25,11 @@ pthread_t listener;
 
 void main(void)
 {
-    logon();
+	logon();
     
     // Main loop (command line)
     char input[32];
+    
     while( strcmp(input,"exit\n") ) {
         printf("> ");
         fgets(input, 32, stdin);
